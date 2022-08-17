@@ -58,6 +58,7 @@ export const defaultOptions = {
   inputOptions: {},
   maxLen: 25,
   dynamicPlaceholder: false,
+  showCountryCode: false,
 };
 
 export default {

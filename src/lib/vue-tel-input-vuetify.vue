@@ -1,41 +1,5 @@
 <template>
   <div :class="['vue-tel-input-vuetify', wrapperClasses]">
-    <div class="country-code">
-      <v-select
-        ref="countryInput"
-        v-model="countryCode"
-        :append-icon="appendIcon"
-        :class="selectClasses"
-        :label="selectLabel"
-        @change="onChangeCountryCode"
-        :items="sortedCountries"
-        :disabled="disabled"
-        :outlined="outlined"
-        :filled="filled"
-        :flat="flat"
-        :light="light"
-        :dark="dark"
-        :readonly="readonly"
-        :shaped="shaped"
-        :rounded="rounded"
-        :background-color="backgroundColor"
-        :color="color"
-        :dense="dense"
-        :menu-props="menuProps"
-        :height="inputHeight"
-        item-text="name"
-        item-value="iso2"
-        return-object
-      >
-        <template v-slot:selection>
-          <div :class="activeCountry.iso2.toLowerCase()" class="vti__flag" />
-        </template>
-        <template v-slot:item="data">
-          <span :class="data.item.iso2.toLowerCase()" class="vti__flag" />
-          <span>{{ data.item.name }} {{ `+${data.item.dialCode}` }}</span>
-        </template>
-      </v-select>
-    </div>
     <v-text-field
       ref="input"
       type="tel"
@@ -96,25 +60,64 @@
       @keyup.space="onSpace"
     >
       <template #append>
-        <slot name="append" />
+        <slot name="append"/>
       </template>
       <template #append-outer>
-        <slot name="append-outer" />
+        <slot name="append-outer"/>
       </template>
       <template #label>
-        <slot name="label" />
+        <slot name="label"/>
       </template>
       <template #message="{ key, message }">
-        <slot name="message" v-bind="{ key, message }" />
+        <slot name="message" v-bind="{ key, message }"/>
       </template>
       <template #prepend>
-        <slot name="prepend" />
+        <slot name="prepend"/>
       </template>
       <template #prepend-inner>
-        <slot name="prepend-inner" />
+        <slot name="prepend-inner"/>
+        <div class="country-code" :class="showCountryCode && 'country-code--extended'">
+          <v-select
+            ref="countryInput"
+            v-model="countryCode"
+            :class="selectClasses"
+            @change="onChangeCountryCode"
+            :items="sortedCountries"
+            :disabled="disabled"
+            :filled="filled"
+            :light="light"
+            :dark="dark"
+            :readonly="readonly"
+            background-color="transparent"
+            :color="color"
+            :dense="dense"
+            solo
+            flat
+            :menu-props="menuProps"
+            hide-details
+            item-text="name"
+            item-value="iso2"
+            return-object
+            @click.stop
+          >
+            <template v-slot:selection>
+              <div :class="activeCountry.iso2.toLowerCase()" class="vti__flag"/>
+              <div v-if="showCountryCode"
+                   class="vti__dial-code text--disabled"
+                   :class="activeCountry.dialCode.length > 3 && 'caption'">
+                +{{ activeCountry.dialCode }}
+              </div>
+            </template>
+            <template v-slot:item="data">
+              <span :class="data.item.iso2.toLowerCase()" class="vti__flag"/>
+              <span>{{ data.item.name }}</span>
+              <span class="caption text--disabled ml-1">+{{ data.item.dialCode }}</span>
+            </template>
+          </v-select>
+        </div>
       </template>
       <template #progress>
-        <slot name="progress" />
+        <slot name="progress"/>
       </template>
     </v-text-field>
   </div>
@@ -298,10 +301,6 @@ export default {
       type: String,
       default: () => getDefault('label'),
     },
-    selectLabel: {
-      type: String,
-      default: '',
-    },
     menuProps: {
       type: [String, Array, Object],
       default: () => {},
@@ -396,11 +395,18 @@ export default {
       type: Number,
       default: () => getDefault('maxLen'),
     },
+    showCountryCode: {
+      type: Boolean,
+      default: () => getDefault('showCountryCode'),
+    },
   },
   data() {
     return {
       phone: '',
-      activeCountry: { iso2: '' },
+      activeCountry: {
+        iso2: '',
+        dialCode: '',
+      },
       open: false,
       finishMounted: false,
       selectedIndex: null,
@@ -439,12 +445,16 @@ export default {
     },
     sortedCountries() {
       // Sort the list countries: from preferred countries to all countries
-      const preferredCountries = this.getCountries(this.preferredCountries).map(
-        country => ({
-          ...country,
-          preferred: true,
-        }),
-      );
+      const preferredCountries = this.getCountries(this.preferredCountries)
+        .map(
+          country => ({
+            ...country,
+            preferred: true,
+          }),
+        );
+      if (preferredCountries.length) {
+        preferredCountries.push({ divider: true });
+      }
       return [...preferredCountries, ...this.filteredCountries];
     },
     phoneObject() {
@@ -596,18 +606,6 @@ export default {
         country => country.iso2 === iso.toUpperCase(),
       );
     },
-    getItemClass(index, iso2) {
-      const highlighted = this.selectedIndex === index;
-      const lastPreferred = index === this.preferredCountries.length - 1;
-      const preferred = this.preferredCountries.some(
-        c => c.toUpperCase() === iso2,
-      );
-      return {
-        highlighted,
-        'last-preferred': lastPreferred,
-        preferred,
-      };
-    },
     choose(country, toEmitInputEvent = false) {
       this.activeCountry = country || this.activeCountry || {};
       if (
@@ -626,7 +624,7 @@ export default {
         && this.inputOptions.showDialCode
         && country
       ) {
-        // Reset phone if the showDialCode is set
+        // Reset phone if the showCountryCode is set
         this.phone = `+${country.dialCode}`;
       }
       if (toEmitInputEvent) {
@@ -794,28 +792,73 @@ export default {
   display: flex;
   align-items: center;
 
-  .country-code {
-    width: 75px;
-  }
-
-  li.last-preferred {
-    border-bottom: 1px solid #cacaca;
-  }
-
   .v-text-field {
     .v-select__selections {
       position: relative;
+      flex-wrap: nowrap;
+
       .vti__flag {
         position: absolute;
-        margin-left: 18px;
+        margin-left: 12px;
+      }
+
+      .vti__dial-code {
+        margin-left: 40px;
       }
     }
+
+    .country-code {
+      > .v-text-field.v-select {
+        width: 62px;
+
+        > .v-input__control > .v-input__slot {
+          padding: 0;
+
+          .v-input__icon > .v-icon {
+            margin-top: 0;
+          }
+        }
+      }
+
+      &--extended {
+        > .v-text-field.v-select {
+          width: 97px;
+        }
+      }
+    }
+
     &--outlined {
       .v-select__selections {
         .vti__flag {
           margin-left: auto;
         }
+
+        .vti__dial-code {
+          margin-left: 28px;
+        }
       }
+
+      .country-code {
+        > .v-text-field.v-select {
+          width: 50px;
+        }
+
+        &--extended {
+          > .v-text-field.v-select {
+            width: 85px;
+          }
+        }
+      }
+    }
+
+    .v-input__append-inner {
+      margin-top: 0 !important;
+      opacity: 0.75;
+    }
+
+    > .v-input__control > .v-input__slot > .v-input__prepend-inner {
+      margin-top: 0 !important;
+      align-self: center;
     }
   }
 }

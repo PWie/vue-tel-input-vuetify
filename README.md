@@ -189,7 +189,6 @@ Use the `vue-tel-input-vuetify` component:
   | `rounded` | `Boolean` | `false` | Adds a border radius to the input |
   | `value` | `any` | `''` | The input's value |
   | `label` | `String` | `'Enter a Phone Number'` | Native input 'label' attribute |
-  | `selectLabel` | `String` | `''` | Country selector 'label' attribute |
   | `autocomplete` | `String` | `'on'` | Native input 'autocomplete' attribute |
   | `autofocus` | `Boolean` | `false` | Native input 'autofocus' attribute |
   | `defaultCountry` | `String` | `''` | Default country, will override the country fetched from IP address of user |
@@ -197,7 +196,7 @@ Use the `vue-tel-input-vuetify` component:
   | `disabledFetchingCountry` | `Boolean` | `false` | Disable fetching current country based on IP address of user |
   | `ignoredCountries` | `Array` | `[]` | List of countries will NOT be shown on the dropdown. ie `['AU', 'BR']` |
   | `inputId` | `String` | `''` | Custom 'id' for the `input` |
-  | `inputOptions` | `Object` | `{ showDialCode: false, tabindex: 0 }` | Options for input, supporting `showDialCode` (always show dial code in the input) and `tabindex`|
+  | `inputOptions` | `Object` | `{ showCountryCode: false, tabindex: 0 }` | Options for input, supporting `showCountryCode` (always show dial code in the input) and `tabindex`|
   | `maxLen` | `Number` | `25` | Native input 'maxlength' attribute |
   | `mode` | `String` | `''` | Format number to `'international'` (with + dial code) or `'national'` (with 0...) |
   | `name` | `String` | `'telephone'` | Native input 'name' attribute |
@@ -205,6 +204,7 @@ Use the `vue-tel-input-vuetify` component:
   | `placeholder` | `String` | `'Enter a phone number'` | Placeholder for the input |
   | `preferredCountries` | `Array` | `[]` | Preferred countries list, will be on top of the dropdown. ie `['AU', 'BR']` |
   | `required` | `Boolean` | `false` | Required property for HTML5 required attribute |
+  | `showCountryCode` | `Boolean` | `false` | Shows country code in Country selector |
   | `wrapperClasses` | `String` &#124; `Array` &#124; `Object` | `''` | Custom classes for the wrapper |
 
 ### Events

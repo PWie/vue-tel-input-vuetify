@@ -6,7 +6,7 @@
           v-model="myPhone"
           :preferred-countries="['id', 'gb', 'ua', 'us']"
           :valid-characters-only="true"
-          select-label="Code"
+          show-country-code
           @input="onInput"
         />
       </v-col>
