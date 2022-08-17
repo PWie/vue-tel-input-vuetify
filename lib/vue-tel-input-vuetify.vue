@@ -125,7 +125,7 @@
 
 <script>
 import PhoneNumber from 'awesome-phonenumber';
-import utils, { getCountry, setCaretPosition } from './utils';
+import utils, { AVAILABLE_MODES, getCountry, setCaretPosition } from './utils';
 
 function getDefault(key) {
   return utils.options[key];
@@ -324,6 +324,12 @@ export default {
     mode: {
       type: String,
       default: () => getDefault('mode'),
+      validator: val => AVAILABLE_MODES.includes(val),
+    },
+    displayMode: {
+      type: String,
+      default: () => getDefault('mode'),
+      validator: val => AVAILABLE_MODES.includes(val),
     },
     invalidMsg: {
       type: String,
@@ -418,17 +424,10 @@ export default {
   },
   computed: {
     parsedMode() {
-      if (this.mode) {
-        if (!['international', 'national'].includes(this.mode)) {
-          console.error('Invalid value of prop "mode"');
-        } else {
-          return this.mode;
-        }
-      }
-      if (!this.phone || this.phone[0] !== '+') {
-        return 'national';
-      }
-      return 'international';
+      return this.getParsedMode(this.mode);
+    },
+    parsedDisplayMode() {
+      return this.getParsedMode(this.displayMode);
     },
     filteredCountries() {
       // List countries after filtered
@@ -477,9 +476,13 @@ export default {
       return result;
     },
     phoneText() {
+      const key = this.parsedMode;
+      return this.phoneObject.number[key] || '';
+    },
+    phoneDisplayText() {
       let key = 'input';
       if (this.phoneObject.valid) {
-        key = this.parsedMode;
+        key = this.parsedDisplayMode;
       }
       return this.phoneObject.number[key] || '';
     },
@@ -488,13 +491,15 @@ export default {
     // eslint-disable-next-line func-names
     'phoneObject.valid': function (value) {
       if (value) {
-        this.phone = this.phoneText;
+        this.phone = this.phoneDisplayText;
       }
       this.$emit('validate', this.phoneObject);
       this.$emit('onValidate', this.phoneObject); // Deprecated
     },
     value() {
-      this.phone = this.value;
+      if (this.phoneObject.number.significant !== PhoneNumber(this.value).getNumber('significant')) {
+        this.phone = this.value;
+      }
     },
     open(isDropdownOpened) {
       // Emit open and close events
@@ -777,6 +782,19 @@ export default {
     },
     onChangeCountryCode() {
       this.choose(this.countryCode, true);
+    },
+    getParsedMode(mode) {
+      if (mode) {
+        if (!AVAILABLE_MODES.includes(mode)) {
+          console.error('Invalid value of prop "mode"');
+        } else {
+          return mode;
+        }
+      }
+      if (!this.phone || this.phone[0] !== '+') {
+        return 'national';
+      }
+      return 'international';
     },
   },
 };

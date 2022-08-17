@@ -1,6 +1,8 @@
 import allCountries from './all-countries';
 import 'whatwg-fetch';
 
+export const AVAILABLE_MODES = ['international', 'national', 'e164', 'rfc3966', 'significant', 'input', ''];
+
 export function getCountry() {
   return fetch('https://ip2c.org/s')
     .then(response => response.text())
