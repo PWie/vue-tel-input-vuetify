@@ -3,6 +3,7 @@
     <v-text-field
       ref="input"
       type="tel"
+      v-bind="$attrs"
       :class="textFieldClasses"
       :messages="messages"
       :error-messages="errorMessages"
@@ -143,6 +144,7 @@ function getParents(node, memo) {
 
 export default {
   name: 'VueTelInputVuetify',
+  inheritAttrs: false,
   directives: {
     // Click-outside by BosNaufal: https://github.com/BosNaufal/vue-click-outside
     'click-outside': {
